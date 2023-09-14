@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models');
 const { Course } = db;
-const authenticateUser  = require('../middleware/authenticateUser');
+// const  authenticateUser  = require('../middleware/authenticateUser');
+const {authenticateUser} = require('../middleware/auth-user')
 
 //NOTE: /api prefix is assigned in app.js line 51
 
