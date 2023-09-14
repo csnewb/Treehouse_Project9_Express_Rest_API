@@ -13,23 +13,34 @@ const bcrypt = require('bcrypt');
 exports.authenticateUser = async (req, res, next) => {
   let message;
 
+  console.log(`req.headers:`)
+  console.log(req.headers)
+
   const credentials = auth(req);
+
+
 
   if (credentials) {
     console.log(`if Credentials is True`)
-    console.log(`credentials.pass: ${credentials.pass}`)
-    const user = await User.findOne({ where: {username: credentials.name} });
+    const email = credentials.name;
+    const password = credentials.password;
+
+    console.log(`credentials: ${credentials}`);
+    console.log(`email: ${email}`);
+    console.log(`password: ${password}`);
+
+    const user = await User.findOne({ where: {emailAddress: email} });
     if (user) {
       console.log(`if User is True`)
       const authenticated = bcrypt
-        .compareSync(credentials.pass, user.confirmedPassword);
+        .compareSync(credentials.pass, user.password);
       if (authenticated) {
-        console.log(`Authentication successful for username: ${user.username}`);
+        console.log(`user: ${user.firstName} is Authenticated`);
 
         // Store the user on the Request object.
         req.currentUser = user;
       } else {
-        message = `Authentication failure for username: ${user.username}`;
+        message = `Authentication failure for username: ${user.firstName}`;
       }
     } else {
       message = `User not found for username: ${credentials.name}`;

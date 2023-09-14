@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 
 //NOTE: /api prefix is assigned in app.js line 51
 
+// CREATE new user (POST)
 router.post('/users', async (req, res) => {
     const { firstName, lastName, emailAddress, password } = req.body;
     console.log(req.body);

@@ -46,11 +46,11 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // import our routes
-const testRoutes = require('./routes/testRoutes');
+
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes  = require('./routes/courseRoutes');
 
-app.use('/test', testRoutes);
+
 app.use('/api', userRoutes);
 app.use('/api', courseRoutes);
 
