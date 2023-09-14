@@ -8,9 +8,9 @@ const bcrypt = require('bcryptjs');
 
 //NOTE: /api prefix is assigned in app.js line 51
 
-// Create (POST)
-router.post('/users', authenticateUser, async (req, res) => {
+router.post('/users', async (req, res) => {
     const { firstName, lastName, emailAddress, password } = req.body;
+    console.log(req.body);
 
     // Validate required fields
     if (!firstName || !lastName || !emailAddress || !password) {
@@ -21,15 +21,20 @@ router.post('/users', authenticateUser, async (req, res) => {
 
     // Hash the password
     const hashedPassword = bcrypt.hashSync(password, 10);
+    console.log(hashedPassword)
 
     try {
         // Create the new user and we replace req.body.password with the hashed password
-        const newUser = await User.create({
+        await User.create({
             ...req.body,
             password: hashedPassword
         });
-        // return the newUser data in our response
-        res.status(201).json(newUser);
+
+        // Set the Location header
+        res.location('/');
+
+        // Return 201 status with no content
+        res.status(201).end();
     } catch (error) {
         if (error.name === 'SequelizeValidationError') {
             // Handle validation errors here
@@ -41,32 +46,27 @@ router.post('/users', authenticateUser, async (req, res) => {
 });
 
 
-// Read (GET)
-router.get('/users/:id', async (req, res) => {
+router.get('/users/', authenticateUser, async (req, res) => {
+    console.log(req.currentUser.firstName);
     try {
-        const user = await User.findByPk(req.params.id);
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+        const user = await User.findByPk(req.currentUser.id);
 
-// Update (PUT)
-router.put('/users/:id', async (req, res) => {
-    try {
-        const user = await User.findByPk(req.params.id);
         if (user) {
-            await user.update(req.body);
-            res.json({ message: 'User updated' });
+            const userJSON = user.toJSON();
+            res.status(200).json(userJSON);
         } else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(404).json({ error: 'User not found' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Delete (DELETE)
+
+
+
+
+// Delete (DELETE) for DB Local Testing Cleanup
 router.delete('/users/:id', async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);

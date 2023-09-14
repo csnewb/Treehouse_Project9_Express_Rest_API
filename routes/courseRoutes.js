@@ -6,6 +6,54 @@ const authenticateUser  = require('../middleware/authenticateUser');
 
 //NOTE: /api prefix is assigned in app.js line 51
 
+
+//Read (GET)
+router.get('/courses/', async (req, res) => {
+    try {
+        const courses = await Course.findAll({
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+                }
+            ]
+        });
+
+        if (courses) {
+            res.status(200).json(courses);
+        } else {
+            res.status(404).json({ error: 'No courses found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+//Read (GET)
+router.get('/courses/:id', async (req, res) => {
+    try {
+        const course = await Course.findByPk(req.params.id, {
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+                }
+            ]
+        });
+
+        if (course) {
+            res.status(200).json(course);
+        } else {
+            res.status(404).json({ error: 'Course not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 // Create (POST)
 router.post('/courses', authenticateUser, async (req, res) => {
     try {
@@ -17,7 +65,12 @@ router.post('/courses', authenticateUser, async (req, res) => {
         }
 
         const newCourse = await Course.create(req.body);
-        res.status(201).json(newCourse);
+
+        // Set the Location header to the URI for the newly created course.
+        res.location(`/api/courses/${newCourse.id}`);
+
+        // Return a 201 HTTP status code and no content.
+        res.status(201).end();
     } catch (error) {
         if (error.name === 'SequelizeValidationError') {
             return res.status(400).json({ error: error.errors.map(e => e.message) });
@@ -27,15 +80,6 @@ router.post('/courses', authenticateUser, async (req, res) => {
 });
 
 
-// Read (GET)
-router.get('/courses/:id', async (req, res) => {
-    try {
-        const course = await Course.findByPk(req.params.id);
-        res.json(course);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
 // Update (PUT)
 router.put('/courses/:id', authenticateUser, async (req, res) => {
@@ -50,7 +94,9 @@ router.put('/courses/:id', authenticateUser, async (req, res) => {
         const course = await Course.findByPk(req.params.id);
         if (course) {
             await course.update(req.body);
-            res.json({ message: 'Course updated' });
+
+            // Return a 204 HTTP status code and no content.
+            res.status(204).end();
         } else {
             res.status(404).json({ message: 'Course not found' });
         }
@@ -63,13 +109,16 @@ router.put('/courses/:id', authenticateUser, async (req, res) => {
 });
 
 
+
 // Delete (DELETE)
 router.delete('/courses/:id', authenticateUser, async (req, res) => {
     try {
         const course = await Course.findByPk(req.params.id);
         if (course) {
             await course.destroy();
-            res.json({ message: 'Course deleted' });
+
+            // Return a 204 HTTP status code and no content.
+            res.status(204).end();
         } else {
             res.status(404).json({ message: 'Course not found' });
         }
@@ -77,5 +126,6 @@ router.delete('/courses/:id', authenticateUser, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 module.exports = router;
